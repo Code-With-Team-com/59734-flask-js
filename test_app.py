@@ -1,27 +1,31 @@
 import pytest
 import json
 import os
-import sys
 
 # Set up the testing environment
 os.environ['FLASK_ENV'] = 'testing'
 
-from app import app, db
+from app import create_app, db
 from models import Task
 
 
 @pytest.fixture
-def client():
-    """Create a test client for the Flask app."""
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+def app():
+    """Create a test application."""
+    test_app = create_app('testing')
+    test_app.config['TESTING'] = True
+    test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     
-    with app.test_client() as client:
-        with app.app_context():
-            db.create_all()
-        yield client
-        with app.app_context():
-            db.drop_all()
+    with test_app.app_context():
+        db.create_all()
+        yield test_app
+        db.drop_all()
+
+
+@pytest.fixture
+def client(app):
+    """Create a test client for the Flask app."""
+    return app.test_client()
 
 
 @pytest.fixture
@@ -160,7 +164,7 @@ class TestDeleteTask:
 class TestTaskModel:
     """Tests for the Task model."""
     
-    def test_task_to_dict(self, client):
+    def test_task_to_dict(self, app):
         """Test that task converts to dictionary correctly."""
         with app.app_context():
             task = Task(title='Test', description='Desc', completed=True)
