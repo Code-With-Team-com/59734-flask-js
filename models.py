@@ -1,3 +1,25 @@
-# TODO: Import SQLAlchemy
-# TODO: Define database models
-# TODO: Create model classes with appropriate fields
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+class Task(db.Model):
+    """Task model for storing task information."""
+    __tablename__ = 'tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
+    
+    def to_dict(self):
+        """Convert task object to dictionary for JSON serialization."""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'completed': self.completed
+        }
+    
+    def __repr__(self):
+        return f'<Task {self.id}: {self.title}>'
